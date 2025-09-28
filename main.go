@@ -1,18 +1,37 @@
 package main
 
 import (
-	"bufio"   //lecture efficace de l’entrée utilisateur (console).
-	"fmt"     //affichage à l’écran et formatage (Println, Printf). Affichage et lecture simple
-	"os"      //accès aux fonctionnalités système, ici pour stdin et fichiers. Accès au système (stdin, fichiers, variables d’environnement)
-	"strings" //manipulation de chaînes de caractères (TrimSpace, ToLower).
+	"bufio"
+	"fmt"
+	"log"
+	"os"
+	"strings"
+
+	"github.com/Diaabloo/go-console-e5/weatherApi"
 )
 
 func main() {
-	reader := bufio.NewReader(os.Stdin) // Création d'un lecteur pour récupérer l'entrée utilisateur
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("👉 Entrez le nom d'une ville : ")
+	city, _ := reader.ReadString('\n')
+	city = strings.TrimSpace(city) // <-- supprime \r, \n et espaces
 
-	fmt.Print("Quel est ton nom ? ")
-	nom, _ := reader.ReadString('\n') // Lit la ligne entrée par l'utilisateur
-	nom = strings.TrimSpace(nom)      // Supprime le saut de ligne
+	weather, err := weatherApi.GetWeather(city)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	fmt.Println("Bonjour,", nom, "! Bienvenue dans le monde de Go 🎉")
+	if len(weather.Weather) == 0 {
+		log.Fatalf("❌ Pas de données météo trouvées pour %s", city)
+	}
+
+	fmt.Println("\n🌍 Rapport météo")
+	fmt.Println("──────────────────────────────")
+	fmt.Printf("📍 Ville       : %s\n", weather.Name)
+	fmt.Printf("🌡️  Température : %.1f °C\n", weather.Main.Temp)
+	fmt.Printf("💧 Humidité    : %d %%\n", weather.Main.Humidity)
+	fmt.Printf("🔽 Pression    : %d hPa\n", weather.Main.Pressure)
+	fmt.Printf("🌬️ Vent        : %.1f m/s\n", weather.Wind.Speed)
+	fmt.Printf("☁️  Ciel        : %s\n", weather.Weather[0].Description)
+	fmt.Println("──────────────────────────────")
 }
